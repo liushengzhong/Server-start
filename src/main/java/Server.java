@@ -18,7 +18,7 @@ public class Server {
 
     public Server(ClusterSpec cluster_spec, String job_name, int task_index)
     {
-
+       //construction
     }
 
     public void make_server_def(ClusterSpec cluster_spec, String job_name, int task_index, ConfigProto config, String protocol)
