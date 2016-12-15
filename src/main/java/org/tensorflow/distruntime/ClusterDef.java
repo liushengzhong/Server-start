@@ -18,7 +18,7 @@ public  final class ClusterDef extends
   private ClusterDef(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  public ClusterDef() {   //手动改成的public的权限，后面有时间再改回来
+  public ClusterDef() {   //
     job_ = java.util.Collections.emptyList();
   }
 
