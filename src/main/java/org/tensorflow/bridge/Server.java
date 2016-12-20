@@ -66,7 +66,7 @@ public class Server {
     }
 
 
-    public Server create_local_server()
+    public static Server create_local_server()
     {
         HashMap<String,List<String>> cluster=new HashMap<String,List<String>>();
         List<String> address_list=new ArrayList<String>();
