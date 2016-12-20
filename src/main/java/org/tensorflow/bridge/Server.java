@@ -10,12 +10,8 @@ import java.util.List;
 public class Server {
 
     public ServerDef server_def;
-    public ServerInterface server;
-    public ClusterSpec cluster_spec;
-    public String job_name;
-    public int task_index;
-    public ConfigProto config;
-    public String protocol;
+    public ServerInterface server;   //这个类应该是从C++里面的ServerInterface类的对象
+
 
     public Server(ClusterSpec cluster_spec, String job_name, int task_index) //传进来的本身就是一个ClusterSpec类的对象，里面有ClusterDef的成员对象
     {
@@ -57,15 +53,18 @@ public class Server {
 
     }
 
+    //return the target for a 'tf.Session' to connect to this server
+    //这个函数的最终目的，是要调到ServerInterface C++类里面的target函数
+    public String target()
+    {
+        return server.target();
+    }
+
     public ServerDef server_def()
     {
         return server_def;
     }
 
-//    public String target()
-//    {
-//        return server.target();
-//    }
 
     public Server create_local_server()
     {
