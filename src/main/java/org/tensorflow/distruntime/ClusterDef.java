@@ -18,7 +18,7 @@ public  final class ClusterDef extends
   private ClusterDef(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  public ClusterDef() {   //
+  private ClusterDef() {
     job_ = java.util.Collections.emptyList();
   }
 
@@ -82,10 +82,7 @@ public  final class ClusterDef extends
             org.tensorflow.distruntime.ClusterDef.class, org.tensorflow.distruntime.ClusterDef.Builder.class);
   }
 
-
-
-
-   static final int JOB_FIELD_NUMBER = 1;
+  public static final int JOB_FIELD_NUMBER = 1;
   private java.util.List<org.tensorflow.distruntime.JobDef> job_;
   /**
    * <pre>

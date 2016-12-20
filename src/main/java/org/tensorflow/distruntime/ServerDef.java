@@ -18,7 +18,7 @@ public  final class ServerDef extends
   private ServerDef(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  public ServerDef() {   //手动修改的权限，后面有时间改回来
+  private ServerDef() {
     jobName_ = "";
     taskIndex_ = 0;
     protocol_ = "";

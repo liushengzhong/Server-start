@@ -18,7 +18,7 @@ public  final class JobDef extends
   private JobDef(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  public JobDef() {   //手动修改的权限，后面有时间改回来
+  private JobDef() {
     name_ = "";
   }
 
@@ -154,7 +154,6 @@ public  final class JobDef extends
                 0,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "");
-
   }
   private com.google.protobuf.MapField<
       java.lang.Integer, java.lang.String> tasks_;
