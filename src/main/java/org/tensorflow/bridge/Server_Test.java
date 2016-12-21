@@ -39,7 +39,10 @@ public class Server_Test {
 
         //System.out.println(cluster.as_dict()); //pass
 
-        System.out.println(cluster.cluster_def);
+        //System.out.println(cluster.as_cluster_def()); //pass
+
+        //Server server=new Server(cluster,"worker",0);
+        //System.out.println(server.server_def);
 
         System.out.println("hello!");
     }
