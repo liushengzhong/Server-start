@@ -10,8 +10,8 @@ import java.util.*;
  */
 public class ClusterSpec {
 
-    ClusterDef cluster_def;
-    Map<String,Map<Integer,String>> cluster_spec;  // job_name task_index  address
+    public ClusterDef cluster_def;
+    public Map<String,Map<Integer,String>> cluster_spec;  // job_name task_index  address
 
     public ClusterSpec(Map<String,List<String>> cluster)  //cluster: job name --> address list    map
     {
@@ -147,7 +147,7 @@ public class ClusterSpec {
     public List<String> job_tasks(String job_name)
     {
         Map<Integer,String> job=cluster_spec.get(job_name);
-        List<String> address_list=new ArrayList<String>();
+        List<String> address_list=new ArrayList<String>(job.size()+1);
 
         Collection<Integer> taskIndexSet= job.keySet();
         List<Integer> taskIndexList = new ArrayList<Integer>(taskIndexSet);
@@ -158,7 +158,8 @@ public class ClusterSpec {
         {
             taskIndex=taskIndexList.get(j);
             address=job.get(taskIndex);
-            address_list.set(taskIndex,address);
+            //address_list.set(taskIndex,address);
+            address_list.add(address);
         }
 
         return address_list;
