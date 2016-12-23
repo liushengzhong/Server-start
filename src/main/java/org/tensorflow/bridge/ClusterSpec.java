@@ -6,169 +6,172 @@ import org.tensorflow.distruntime.JobDef;
 import java.util.*;
 
 /**
- * Created by intel on 16-12-13.
+ * Created by Shengzhong Liu on 16-12-13.
  */
-public class ClusterSpec {
+public class ClusterSpec extends Object{
 
-    public ClusterDef cluster_def;
-    public Map<String,Map<Integer,String>> cluster_spec;  // job_name task_index  address
+    private ClusterDef clusterDef;
+    private Map<String, Map<Integer, String>> clusterSpec;  // jobName taskIndex  address
 
-    public ClusterSpec(Map<String,List<String>> cluster)  //cluster: job name --> address list    map
+    public ClusterSpec(Map<String, List<String>> cluster)  //cluster: job name --> address list map
     {
-        cluster_spec=new HashMap<String, Map<Integer,String>>();
+        clusterSpec = new HashMap<String, Map<Integer, String>>();
         Iterator iter = cluster.entrySet().iterator();
-        Integer i=0;
-        while (iter.hasNext())
-        {
-            Map.Entry entry= (Map.Entry) iter.next();
+        Integer i = 0;
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
             String key = (String) entry.getKey();
-            ArrayList<String> value = (ArrayList<String>)entry.getValue();
-            Map<Integer,String>job_tasks=new HashMap<Integer, String>();
-            i=0;
-            Iterator iter_address = value.iterator();
-            while (iter_address.hasNext())
-            {
-                job_tasks.put(i, (String)iter_address.next());
+            ArrayList<String> value = (ArrayList<String>) entry.getValue();
+            Map<Integer, String> jobTasks = new HashMap<Integer, String>();
+            i = 0;
+            Iterator iterAddress = value.iterator();
+            while (iterAddress.hasNext()) {
+                jobTasks.put(i, (String) iterAddress.next());
                 i++;
             }
-            cluster_spec.put(key, job_tasks);
+            clusterSpec.put(key, jobTasks);
         }
-        this.make_cluster_def();
+        this.makeClusterDef();
     }
 
-    //Create a ClusterDef based on the given cluster_spec
-    public void make_cluster_def()
-    {
-        Map<Integer,String> tasks;
+    /**
+     * Create a ClusterDef based on the given clusterSpec
+     */
+    private void makeClusterDef() {
+        Map<Integer, String> tasks;
         int taskIndex;
         String address;
 
-        ClusterDef.Builder cluster_def_builder=ClusterDef.newBuilder();
-        JobDef.Builder job_builder;
+        ClusterDef.Builder clusterDefBuilder = ClusterDef.newBuilder();
+        JobDef.Builder jobBuilder;
         JobDef job;
 
-        Collection<String> jobSet= cluster_spec.keySet();
-        List<String> jobList = new ArrayList<String>(jobSet);  //list就是一个job name的list
-        Collections.sort(jobList);  //sort the key of cluster_spec
+        Collection<String> jobSet = clusterSpec.keySet();
+        List<String> jobList = new ArrayList<String>(jobSet);  //a list of job names
+        Collections.sort(jobList);  //sort the key of clusterSpec
 
-        for (int i=0;i<jobList.size();i++)
-        {
-            job_builder=JobDef.newBuilder();
-            job_builder.setName(jobList.get(i));  //得到第i个job的name
-            tasks=cluster_spec.get(jobList.get(i));  //第i个job对应的task的一个map, taskIndex-->address
+        for (int i = 0; i < jobList.size(); i++) {
+            jobBuilder = JobDef.newBuilder();
+            jobBuilder.setName(jobList.get(i));  //get the name of the i-th job
+            tasks = clusterSpec.get(jobList.get(i));  //the map corresponding to the i-th job, taskIndex-->address
 
-            Collection<Integer> taskIndexSet= tasks.keySet();
+            Collection<Integer> taskIndexSet = tasks.keySet();
             List<Integer> taskIndexList = new ArrayList<Integer>(taskIndexSet);
             Collections.sort(taskIndexList);  //sort the index of tasks
-            for (int j=0;j<taskIndexList.size();j++)
-            {
-                taskIndex=taskIndexList.get(j);
-                address=tasks.get(taskIndex);
-                job_builder.putTasks(taskIndex,address);  //把taskIndex和对应的address放到job_builder里面
+            for (int j = 0; j < taskIndexList.size(); j++) {
+                taskIndex = taskIndexList.get(j);
+                address = tasks.get(taskIndex);
+                jobBuilder.putTasks(taskIndex, address); //put the taskIndex and its address into the jobBuilder
             }
-            job=job_builder.build();
-            cluster_def_builder.addJob(job);
+            job = jobBuilder.build();
+            clusterDefBuilder.addJob(job);
         }
 
-        cluster_def=cluster_def_builder.build();
+        clusterDef = clusterDefBuilder.build();
     }
 
-    //Judge whether the cluster is empty
-    public boolean nonzero()
-    {
-        return cluster_def.isInitialized();
+    /**
+     * Judge whether the cluster is empty
+     */
+    public boolean nonZero() {
+        return clusterDef.isInitialized();
     }
 
-    //Judge whether two cluster specs equal to each other
-    public boolean equals(ClusterSpec other)
-    {
-        return cluster_def.equals(other.cluster_def);
+    /**
+     * Judge whether two cluster specs equal to each other
+     */
+    @Override
+    public boolean equals(Object other) {
+        ClusterSpec otherSpec = (ClusterSpec) other;
+        return clusterDef.equals(otherSpec.clusterDef);
     }
 
-    //return a map from job names to their tasks(as the list form)
-    public Map<String, List<String>> as_dict()
-    {
-        Map<String, List<String>> job_tasks_map=new HashMap<String, List<String>>();
-        String job_name;
-        List<String> jobs=this.jobs();
-        for (int i=0;i<jobs.size();i++)
-        {
-            job_name=jobs.get(i);
-            List<Integer> task_indices=this.task_indices(job_name);
-            if (Collections.max(task_indices)+1==task_indices.size()) //the tasks indices are dense
+    /**
+     * return a map from job names to their tasks(as the list form)
+     */
+    public Map<String, List<String>> asDict() {
+        Map<String, List<String>> jobTasksMap = new HashMap<String, List<String>>();
+        String jobName;
+        List<String> jobs = this.jobs();
+        for (int i = 0; i < jobs.size(); i++) {
+            jobName = jobs.get(i);
+            List<Integer> taskIndices = this.taskIndices(jobName);
+            if (Collections.max(taskIndices) + 1 == taskIndices.size()) //the tasks indices are dense
             {
-                job_tasks_map.put(job_name,this.job_tasks(job_name));
-            }
-            else //the tasks indices are not dense, manually make the list dense
+                jobTasksMap.put(jobName, this.jobTasks(jobName));
+            } else //the tasks indices are not dense, manually make the list dense
             {
-                List<String> tasks=new ArrayList<String>();
-                Integer task_index;
-                for (int j=0;j<task_indices.size();j++)
-                {
-                    task_index=task_indices.get(j);
-                    tasks.add(this.task_address(job_name,task_index));
+                List<String> tasks = new ArrayList<String>();
+                Integer taskIndex;
+                for (int j = 0; j < taskIndices.size(); j++) {
+                    taskIndex = taskIndices.get(j);
+                    tasks.add(this.taskAddress(jobName, taskIndex));
 
                 }
             }
         }
-        return job_tasks_map;
+        return jobTasksMap;
     }
 
-    //返回所有的Job组成的list
-    public List<String> jobs()
-    {
-        Collection<String> jobSet= cluster_spec.keySet();
+    /**
+     * return the list consisting of all the jobs
+     */
+    public List<String> jobs() {
+        Collection<String> jobSet = clusterSpec.keySet();
         List<String> jobList = new ArrayList<String>(jobSet);
         return jobList;
     }
 
-    //return the number of tasks defined in the given job
-    public int num_tasks(String job_name)
-    {
-        return cluster_spec.get(job_name).keySet().size();
+    /**
+     * return the number of tasks defined in the given job
+     */
+    public int numTasks(String jobName) {
+        return clusterSpec.get(jobName).keySet().size();
     }
 
-    //return a list of valid task indices in the given job
-    public List<Integer> task_indices(String job_name)
-    {
-        Collection<Integer> task_index_set=cluster_spec.get(job_name).keySet();
-        List<Integer> task_index_list = new ArrayList<Integer>(task_index_set);
-        return task_index_list;
+    /**
+     * return a list of valid task indices in the given job
+     */
+    public List<Integer> taskIndices(String jobName) {
+        Collection<Integer> taskIndexSet = clusterSpec.get(jobName).keySet();
+        List<Integer> taskIndexList = new ArrayList<Integer>(taskIndexSet);
+        return taskIndexList;
     }
 
-    //return the address of the given task in the given job
-    public String task_address(String job_name, Integer task_index)
-    {
-        Map<Integer,String> job=cluster_spec.get(job_name);
-        return job.get(task_index);
+    /**
+     * return the address of the given task in the given job
+     */
+    public String taskAddress(String jobName, Integer taskIndex) {
+        Map<Integer, String> job = clusterSpec.get(jobName);
+        return job.get(taskIndex);
     }
 
-    //return a list of tasks addresses, where the index in the list corresponds to the task index of each task
-    public List<String> job_tasks(String job_name)
-    {
-        Map<Integer,String> job=cluster_spec.get(job_name);
-        List<String> address_list=new ArrayList<String>(job.size()+1);
+    /**
+     * return a list of tasks addresses, where the index in the list corresponds to the task index of each task
+     */
+    public List<String> jobTasks(String jobName) {
+        Map<Integer, String> job = clusterSpec.get(jobName);
+        List<String> addressList = new ArrayList<String>(job.size() + 1);
 
-        Collection<Integer> taskIndexSet= job.keySet();
+        Collection<Integer> taskIndexSet = job.keySet();
         List<Integer> taskIndexList = new ArrayList<Integer>(taskIndexSet);
         Collections.sort(taskIndexList);  //sort the index of tasks
         int taskIndex;
         String address;
-        for (int j=0;j<taskIndexList.size();j++)
-        {
-            taskIndex=taskIndexList.get(j);
-            address=job.get(taskIndex);
-            //address_list.set(taskIndex,address);
-            address_list.add(address);
+        for (int j = 0; j < taskIndexList.size(); j++) {
+            taskIndex = taskIndexList.get(j);
+            address = job.get(taskIndex);
+            //addressList.set(taskIndex,address);
+            addressList.add(address);
         }
-
-        return address_list;
+        return addressList;
     }
 
-    //Return the ClusterDef property
-    public ClusterDef as_cluster_def()
-    {
-        return cluster_def;
+    /**
+     * Return the ClusterDef property
+     */
+    public ClusterDef asClusterDef() {
+        return clusterDef;
     }
 
 
